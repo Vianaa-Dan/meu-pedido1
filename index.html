@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aceitas?</title>
+    <style>
+        body {
+            background-color: #ffc8dd;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            text-align: center;
+        }
+        h1 { 
+            color: #590d22; 
+            font-size: 28px; 
+            padding: 20px;
+            font-weight: bold;
+            z-index: 2;
+        }
+        .buttons { 
+            position: relative; 
+            width: 100%; 
+            height: 300px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            z-index: 2;
+        }
+        button {
+            padding: 15px 35px;
+            border: 3px solid #ffb3c1;
+            border-radius: 12px;
+            background-color: #ffb3c1;
+            color: #590d22;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+            touch-action: manipulation;
+            transition: transform 0.1s;
+        }
+        #btn-sim { margin-bottom: 30px; }
+        #btn-nao { position: absolute; font-size: 16px; transition: 0.2s ease-out; }
+
+        /* Estilo para os corações caindo */
+        .heart {
+            position: fixed;
+            top: -1vh;
+            font-size: 2rem;
+            transform: translateY(0);
+            animation: fall 3s linear forwards;
+            z-index: 1;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(105vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="titulo">Quer namorar comigo? ❤️</h1>
+
+    <div class="buttons" id="container-botoes">
+        <button id="btn-sim" onclick="aceitou()">Sim</button>
+        <button id="btn-nao" onmouseover="foge()" onclick="foge()" ontouchstart="foge()">Não</button>
+    </div>
+
+    <div id="player" style="position: absolute; visibility: hidden; pointer-events: none;"></div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        var player;
+        var musicaIniciada = false;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                videoId: '6c0LA4Nb1vY',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'modestbranding': 1, 'rel': 0 }
+            });
+        }
+
+        function tocarMusica() {
+            if (player && !musicaIniciada) {
+                player.playVideo();
+                musicaIniciada = true;
+            }
+        }
+
+        function aceitou() {
+            tocarMusica();
+            // Muda o texto e esconde os botões
+            document.getElementById('titulo').innerHTML = "Te amo bb! ❤️<br><span style='font-size: 20px;'>Agora você é Danielly Agatha da Costa de Almeida Viana ihihihi</span>";
+            document.getElementById('container-botoes').style.display = 'none';
+            
+            // Inicia a chuva de corações
+            setInterval(criarCoracao, 300);
+        }
+
+        function criarCoracao() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerText = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 2 + 3 + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => { heart.remove(); }, 5000);
+        }
+
+        function foge() {
+            tocarMusica();
+            const btn = document.getElementById('btn-nao');
+            const width = window.innerWidth - btn.offsetWidth;
+            const height = window.innerHeight - btn.offsetHeight;
+            const newX = Math.random() * (width - 20) + 10;
+            const newY = Math.random() * (height - 20) + 10;
+            btn.style.left = newX + 'px';
+            btn.style.top = newY + 'px';
+        }
+    </script>
+</body>
+</html></html>
