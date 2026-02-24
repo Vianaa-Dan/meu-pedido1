@@ -11,10 +11,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             font-family: 'Arial', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
             text-align: center;
         }
         h1 { 
@@ -27,11 +27,11 @@
         .buttons { 
             position: relative; 
             width: 100%; 
-            height: 300px; 
+            height: 220px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            z-index: 2;
+            z-index: 10;
         }
         button {
             padding: 15px 35px;
@@ -44,25 +44,22 @@
             cursor: pointer;
             box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
             touch-action: manipulation;
-            transition: transform 0.1s;
         }
         #btn-sim { margin-bottom: 30px; }
-        #btn-nao { position: absolute; font-size: 16px; transition: 0.2s ease-out; }
+        #btn-nao { position: absolute; top: 120px; font-size: 16px; transition: 0.1s ease-out; }
 
-        /* Estilo para os corações caindo */
-        .heart {
-            position: fixed;
-            top: -1vh;
-            font-size: 2rem;
-            transform: translateY(0);
-            animation: fall 3s linear forwards;
+        .video-container {
+            margin-top: 20px;
             z-index: 1;
         }
-        @keyframes fall {
-            to {
-                transform: translateY(105vh) rotate(360deg);
-            }
+        video {
+            width: 250px; 
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
         }
+
+        .heart { position: fixed; top: -1vh; font-size: 2rem; animation: fall 3s linear forwards; z-index: 5; }
+        @keyframes fall { to { transform: translateY(105vh) rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -71,39 +68,47 @@
 
     <div class="buttons" id="container-botoes">
         <button id="btn-sim" onclick="aceitou()">Sim</button>
-        <button id="btn-nao" onmouseover="foge()" onclick="foge()" ontouchstart="foge()">Não</button>
+        <button id="btn-nao" onmouseover="foge()" ontouchstart="foge()">Não</button>
     </div>
 
-    <div id="player" style="position: absolute; visibility: hidden; pointer-events: none;"></div>
+    <div class="video-container" id="video-div">
+        <video id="meuVideo" autoplay loop muted playsinline>
+            <source src="video.mov" type="video/quicktime">
+            <source src="video.mov" type="video/mp4">
+            Seu navegador não suporta vídeos.
+        </video>
+    </div>
+
+    <div id="player" style="position: absolute; left: -1000px; top: 0; width: 1px; height: 1px;"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         var player;
         var musicaIniciada = false;
 
+        // Comando para iniciar o vídeo assim que abrir a página
+        window.addEventListener('load', function() {
+            var video = document.getElementById('meuVideo');
+            video.play().catch(function(e) { console.log("Autoplay bloqueado"); });
+        });
+
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
-                height: '0',
-                width: '0',
-                videoId: '6c0LA4Nb1vY',
-                playerVars: { 'autoplay': 0, 'controls': 0, 'modestbranding': 1, 'rel': 0 }
+                height: '1', width: '1', videoId: '6c0LA4Nb1vY',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'playsinline': 1 },
+                events: { 'onReady': function(event) { event.target.setVolume(100); } }
             });
         }
 
-        function tocarMusica() {
-            if (player && !musicaIniciada) {
-                player.playVideo();
-                musicaIniciada = true;
-            }
+        function forcarTocar() {
+            if (player) { player.unMute(); player.playVideo(); }
         }
 
         function aceitou() {
-            tocarMusica();
-            // Muda o texto e esconde os botões
-            document.getElementById('titulo').innerHTML = "Te amo bb ❤️❤️<br><span style='font-size: 20px;'>Agora você é minha, e eu sou todo seu!!!</span>";
+            forcarTocar();
+            document.getElementById('titulo').innerHTML = "Te amo bb ❤️❤️<br><span style='font-size: 20px;'>Agora você é minha, e eu sou todo seu!! </span>";
             document.getElementById('container-botoes').style.display = 'none';
-            
-            // Inicia a chuva de corações
+            document.getElementById('video-div').style.marginTop = "50px";
             setInterval(criarCoracao, 300);
         }
 
@@ -118,16 +123,29 @@
         }
 
         function foge() {
-            tocarMusica();
-            const btn = document.getElementById('btn-nao');
-            const width = window.innerWidth - btn.offsetWidth;
-            const height = window.innerHeight - btn.offsetHeight;
-            const newX = Math.random() * (width - 20) + 10;
-            const newY = Math.random() * (height - 20) + 10;
-            btn.style.left = newX + 'px';
-            btn.style.top = newY + 'px';
+            if (player && !musicaIniciada) { player.playVideo(); musicaIniciada = true; }
+            const btnNao = document.getElementById('btn-nao');
+            const btnSim = document.getElementById('btn-sim');
+            const rectSim = btnSim.getBoundingClientRect();
+
+            let newX, newY;
+            let overlap = true;
+            const widthLimit = window.innerWidth - btnNao.offsetWidth;
+            const heightLimit = window.innerHeight - btnNao.offsetHeight;
+
+            while (overlap) {
+                newX = Math.random() * (widthLimit - 40) + 20;
+                newY = Math.random() * (heightLimit - 40) + 20;
+                const margin = 50;
+                if (newX + btnNao.offsetWidth + margin < rectSim.left || newX - margin > rectSim.right ||
+                    newY + btnNao.offsetHeight + margin < rectSim.top || newY - margin > rectSim.bottom) {
+                    overlap = false;
+                }
+            }
+            btnNao.style.position = "fixed";
+            btnNao.style.left = newX + 'px';
+            btnNao.style.top = newY + 'px';
         }
     </script>
 </body>
-
-</html></html>
+</html>
